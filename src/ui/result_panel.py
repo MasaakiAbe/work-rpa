@@ -10,6 +10,15 @@ from PIL import Image
 from src.models.data_models import PipelineResult
 
 
+def _highlightUncertain(text: str) -> str:
+  """[?文字?] を赤色ハイライトに変換する"""
+  return re.sub(
+    r'\[\?(.+?)\?\]',
+    r':red-background[**\1❓**]',
+    text,
+  )
+
+
 def _parseExtractedItems(text: str) -> list[tuple[str, str]]:
   """
   「項目名: 値」形式のテキストをパースする。
@@ -73,6 +82,12 @@ def renderResultPanel(result: PipelineResult, promptMode: str = 'テキスト読
 
 def _renderRawText(text: str) -> None:
   """テキスト読み取りモードの表示"""
+  # 低確度部分をハイライト表示
+  if '[?' in text:
+    st.markdown(_highlightUncertain(text))
+    st.divider()
+
+  # コピー用テキストエリア
   lineCount = text.count('\n') + 1
   textHeight = max(200, min(lineCount * 30, 800))
   st.text_area(
@@ -97,7 +112,7 @@ def _renderExtractedItems(text: str) -> None:
         if itemValue == '-':
           st.markdown(f'*{itemValue}*')
         else:
-          st.markdown(itemValue)
+          st.markdown(_highlightUncertain(itemValue))
     st.divider()
 
   # 生テキストも折りたたみで表示（コピー用）
