@@ -46,10 +46,14 @@ def main():
     from src.config.settings import getSettings
     settings = getSettings()
     engineName = settings.ocrPrimaryEngine.upper()
-    st.success(f'OCRエンジン: **{engineName}**')
-    if engineName == 'GEMINI':
+    if engineName == 'GEMINI' and settings.geminiApiKey:
+      st.success(f'OCRエンジン: **{engineName}**')
       st.caption('Gemini Vision - 手書き日本語に最適')
-    st.caption('エンジン切替は `.env` の `OCR_PRIMARY_ENGINE` を変更')
+    elif engineName == 'GEMINI' and not settings.geminiApiKey:
+      st.error('GEMINI_API_KEY が未設定です')
+      st.caption('Streamlit Cloud: Settings → Secrets に設定してください')
+    else:
+      st.info(f'OCRエンジン: **{engineName}**')
 
   # ファイルアップロード
   uploadedFile = st.file_uploader(

@@ -42,6 +42,13 @@ def renderResultPanel(result: PipelineResult) -> None:
       st.metric('処理時間', f'{ocrResult.processingTimeMs}ms')
     with col3:
       st.metric('エンジン', ocrResult.engineUsed)
+
+    # Tesseractフォールバック時の警告
+    if 'tesseract' in ocrResult.engineUsed:
+      st.warning(
+        'Tesseractで処理されました（手書き文字の精度が低い場合があります）。\n'
+        'Gemini APIキーが設定されているか確認してください。'
+      )
   else:
     st.warning('テキストが認識されませんでした。領域を変えて再度お試しください。')
 
