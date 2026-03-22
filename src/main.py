@@ -73,14 +73,15 @@ def main():
       st.info(f'OCRエンジン: **{engineName}**')
 
   # ファイルアップロード
+  st.subheader('ファイルを選択')
   uploadedFile = st.file_uploader(
-    'FAX画像をアップロード',
+    'ここにファイルをドラッグ＆ドロップ、またはクリックして選択',
     type=['png', 'jpg', 'jpeg', 'tiff', 'bmp', 'pdf'],
-    help='対応形式: PNG, JPG, TIFF, BMP, PDF',
+    label_visibility='visible',
   )
 
   if uploadedFile is None:
-    st.info('👆 FAX画像ファイルをアップロードしてください')
+    st.info('画像（PNG, JPG）またはPDFファイルをアップロードしてください')
     return
 
   # PDF / 画像の読み込み
