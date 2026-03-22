@@ -90,9 +90,13 @@ def main():
           'promptMode': promptMode,
         })
         st.session_state['lastResult'] = result
+        st.session_state['lastPromptMode'] = promptMode
 
   if 'lastResult' in st.session_state:
-    renderResultPanel(st.session_state['lastResult'])
+    renderResultPanel(
+      st.session_state['lastResult'],
+      promptMode=st.session_state.get('lastPromptMode', 'テキスト読み取り'),
+    )
 
 
 if __name__ == '__main__':
