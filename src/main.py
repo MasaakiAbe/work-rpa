@@ -30,6 +30,23 @@ logging.basicConfig(
 )
 
 
+def loadPdfPages(uploadedFile) -> list[Image.Image]:
+  """PDFを画像のリストに変換する"""
+  import fitz
+  pdfBytes = uploadedFile.read()
+  uploadedFile.seek(0)
+  doc = fitz.open(stream=pdfBytes, filetype='pdf')
+  pages = []
+  for page in doc:
+    # 高解像度でレンダリング（DPI 200相当）
+    mat = fitz.Matrix(200 / 72, 200 / 72)
+    pix = page.get_pixmap(matrix=mat)
+    img = Image.frombytes('RGB', [pix.width, pix.height], pix.samples)
+    pages.append(img)
+  doc.close()
+  return pages
+
+
 def main():
   st.set_page_config(
     page_title='FAX OCR Agent Team',
@@ -66,11 +83,20 @@ def main():
     st.info('👆 FAX画像ファイルをアップロードしてください')
     return
 
-  # 画像読み込み
-  image = Image.open(uploadedFile).convert('RGB')
+  # PDF / 画像の読み込み
+  isPdf = uploadedFile.name.lower().endswith('.pdf')
 
-  # 領域選択（デフォルト全画面）
-  region = renderImageCanvas(image)
+  if isPdf:
+    pages = loadPdfPages(uploadedFile)
+    totalPages = len(pages)
+    image = pages[0]  # デフォルトは1ページ目
+  else:
+    pages = None
+    totalPages = 1
+    image = Image.open(uploadedFile).convert('RGB')
+
+  # 領域選択（デフォルト全画面）+ PDF時はページ選択
+  region, image = renderImageCanvas(image, pages=pages, totalPages=totalPages)
 
   # モード選択 + OCR実行ボタン
   if region is not None:

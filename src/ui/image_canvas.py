@@ -1,4 +1,4 @@
-"""画像キャンバスコンポーネント - 全画面デフォルト + 領域調整UI"""
+"""画像キャンバスコンポーネント - 全画面デフォルト + 領域/ページ調整UI"""
 
 from __future__ import annotations
 
@@ -11,11 +11,28 @@ from src.models.data_models import RegionSelection
 PREVIEW_MAX_WIDTH = 300
 
 
-def renderImageCanvas(image: Image.Image) -> RegionSelection | None:
+def renderImageCanvas(
+  image: Image.Image,
+  pages: list[Image.Image] | None = None,
+  totalPages: int = 1,
+) -> tuple[RegionSelection | None, Image.Image]:
   """
-  デフォルトは全画面選択。
-  画像プレビューは常時表示、スライダーはexpanderに格納。
+  デフォルトは1ページ目・全画面選択。
+  PDFの場合はページ選択も可能。
+
+  Returns:
+    (RegionSelection, 選択ページの画像)
   """
+  # PDFのページ選択
+  if pages and totalPages > 1:
+    pageNum = st.selectbox(
+      f'ページ選択（全{totalPages}ページ）',
+      range(1, totalPages + 1),
+      index=0,
+      format_func=lambda x: f'{x} ページ目',
+    )
+    image = pages[pageNum - 1]
+
   imgWidth, imgHeight = image.size
 
   # デフォルト: 全画面
@@ -34,4 +51,4 @@ def renderImageCanvas(image: Image.Image) -> RegionSelection | None:
       y = st.slider('Y（上端）', 0, imgHeight, 0, key='region_y')
       h = st.slider('高さ', 1, imgHeight - y, imgHeight - y, key='region_h')
 
-  return RegionSelection(x=x, y=y, width=w, height=h)
+  return RegionSelection(x=x, y=y, width=w, height=h), image
